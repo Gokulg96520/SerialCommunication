@@ -1,0 +1,245 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <POU Name="SerialCom" Id="{86b928b2-524d-4512-a468-1c1c52c3f0d0}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK SerialCom
+VAR_IN_OUT
+	TxBuffer	: ComBuffer;
+	RxBuffer	: ComBuffer;
+END_VAR
+VAR_INPUT
+	
+	bSendMode : BOOL;
+	bSendData : BOOL;
+	sSendString : STRING;
+	sSendPrefix : STRING;
+	sSendSuffix :STRING;
+	
+	sReceivePrefix : STRING;
+	sReceiveSuffix :STRING;
+	tReceiveTimeOut : TIME;
+	bReset :BOOL;
+	
+END_VAR
+VAR_OUTPUT
+	bSendBusy : BOOL;
+	eSendError : Tc2_SerialCom.ComError_t;
+	fbReceiveString : Tc2_SerialCom.ReceiveString;	
+	sReceiveString : STRING;
+END_VAR
+VAR 
+	fbSendString : Tc2_SerialCom.SendString;
+	sSendStringData : STRING;
+	bReceiveBusy : BOOL;
+	eReceiveError : Tc2_SerialCom.ComError_t;
+	bReceiveTimeOut : BOOL;
+	bReceiveStringData : BOOL;
+	bSendDataRisingEdge :  Tc2_Standard.R_TRIG;
+	bReceivedStringFallingEdge : Tc2_Standard.F_TRIG;
+	sRawRecievedString : STRING;
+	findPrefix : INT;
+	findSuffix : INT;
+END_VAR
+
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* Version history: 
+Date          | Version    | created under        | Author          | Remark 
+---------------------------------------------------------------------------------------- 
+18/06/2022    | 1.0.0      | V3.1 (Build 4024.29) | Gokul G         | first release 
+	* Basic PC Com Implementation 
+	
+*) 
+
+(* Serial Communication  
+1.Install TF6340 on Target & Enginnering System, Add Tc2_SerialCom Library
+2.Create an CommTask with 1-2ms Task Time
+3.Create an BackgroundCommProgram(PRG) call it in CommTask
+4.In Back Ground Program Add following Variable
+
+	(* I/O variables for a PC-COM port *)
+    stIn_PcCom AT %I* : PcComInData; (* linked to the port in the TwinCAT System Manager *)
+    stOut_PcCom AT %Q* : PcComOutData; (* linked to the port in the TwinCAT System Manager *)
+	(* Background communication with the PC COM port device *)
+	fbPcComCtrl			: SerialLineControl;
+	bPcComCtrlError		: BOOL;
+	ePcComCtrlErrorID	: ComError_t;	
+	
+	(* I/O variables for a EL6001 terminal*)
+    stIn_EL6001 AT %I*     : EL6inData22B; (* linked to the EL6001 in the TwinCAT System Manager *)
+    stOut_EL6001 AT %Q*     : EL6outData22B;(* linked to the EL6001 in the TwinCAT System Manager *)
+	
+    (* I/O variables for a KL6001 terminal*)
+    stIn_KL6001 AT %I*     : KL6inData; (* linked to the KL6001 in the TwinCAT System Manager *)
+    stOut_KL6001 AT %Q*     : KL6outData; (* linked to the KL6001 in the TwinCAT System Manager *)
+	
+5.Add following Program in Background Program
+
+	fbPcComCtrl(
+	Mode:= SERIALLINEMODE_PC_COM_PORT, 
+	pComIn:= ADR(stIn_PcCom), 
+	pComOut:= ADR(stOut_PcCom), 
+	SizeComIn:= UINT_TO_INT(SIZEOF(stIn_PcCom)), 
+	Error=> , 
+	ErrorID=> , 
+	TxBuffer:= SerialComm.TxBufferPcCom, 
+	RxBuffer:= SerialComm.RxBufferPcCom);
+	IF fbPcComCtrl.Error THEN
+		bPcComCtrlError := TRUE;
+		ePcComCtrlErrorID := fbPcComCtrl.ErrorID;
+	END_IF
+
+6.In Global Variable of SerialCom
+	
+	(* Buffer Variable *)
+	RxBufferPcCom		: ComBuffer;	(* Receive data buffer; used with all receive function blocks *)
+	TxBufferPcCom		: ComBuffer;	(* Transmit data buffer; used with all receive function blocks *)
+
+7.In Main Program
+
+	Variable
+	fbSerialCommInstance1 : SerialCom;
+	sRecieveString : STRING;
+	bRecieveError : BOOL;
+	bSendBusy: BOOL;
+	eSendError: INT;
+	sSendData : STRING;
+	bsendTrigger: BOOL;
+	STxBuffer: INT;
+	tSendTime: INT;
+	sizeoff : UINT;
+	bRecieveReset: BOOL;
+	
+	(* Send String Data *)
+	fbSerialCommInstance1(bSendData:= bsendTrigger,
+						  bReset := bRecieveReset,
+						  TxBuffer := SerialComm.TxBufferPcCom,
+						  sSendPrefix:='$01',
+						  sSendSuffix:='$02',
+						  sSendString:=sSendData,
+						  bSendBusy =>bSendBusy,
+						  eSendError =>eSendError,
+						  RxBuffer := SerialComm.RxBufferPcCom,
+						  sReceiveString =>sRecieveString,
+						  sReceivePrefix:='$01',
+						  sReceiveSuffix:='$02',
+						  tReceiveTimeOut := T#1S,
+						  bReset :=bRecieveError,
+						  bReceiveStringData =>,
+						  bReceiveBusy =>,
+						  eReceiveError =>,
+						  bReceiveTimeOut =>
+						  );
+						  
+8.Com Port Mode setting for pc, make sure receiver & Device manager com setting are same as setting in twincat
+9.Create 2 Task one for Standard Program & another one for communication make task time is less usually 2ms (Refer manual for further information)
+10.Create an BackgroundCommProgram(PRG) call it in CommTask
+11.Link Background I/O Variable to Hardware
+12.Go to com device click on input, select data1 to 64 Right click change multilink & link the background created variable & Similar to output also
+13.Go to Instance, Task Inputs servStatus to com input device, similar for output
+14.Also add serStatus & SerCtrl 
+15.Then in Main Send sting with sSendData Input variable & once we recieved an string will be displayed in sRecieveString
+
+*)
+
+//Send String
+bSendDataRisingEdge(CLK:=bSendData);
+IF bSendDataRisingEdge.Q AND NOT bSendBusy THEN 
+
+	//Send Data Suffix & Prefix Addition
+	sSendStringData := Tc2_Standard.CONCAT( STR1 := Tc2_Standard.CONCAT(STR1:=sSendPrefix,STR2:=sSendString),STR2 := sSendSuffix);
+	
+	//Send String
+	fbSendString(SendString:= sSendStringData,
+				TXbuffer:= TxBuffer,
+				Busy=> bSendBusy,
+				Error=> eSendError
+				);
+
+END_IF
+
+//Receive String
+fbReceiveString(Prefix:=sReceivePrefix, 
+				Suffix:=sReceiveSuffix, 
+				Timeout:=tReceiveTimeOut, 
+				Reset:=bReset, 
+				StringReceived=>bReceiveStringData, 
+				Busy=>bReceiveBusy, 
+				Error=>eReceiveError, 
+				RxTimeout=>bReceiveTimeOut, 
+				ReceivedString:=sRawRecievedString, 
+				RXbuffer:=RxBuffer);	
+				
+//Processing Recieved String
+bReceivedStringFallingEdge(CLK:=bReceiveStringData);
+IF bReceivedStringFallingEdge.Q THEN
+	findPrefix := Tc2_Standard.FIND(STR1:= sRawRecievedString,STR2:=sReceivePrefix);
+	findSuffix := Tc2_Standard.FIND(STR1:= sRawRecievedString,STR2:=sReceiveSuffix);
+	sReceiveString := Tc2_Standard.MID(STR:=sRawRecievedString,POS:=(findPrefix +1),LEN:=((findSuffix-findPrefix)-1));
+END_IF;
+
+
+					]]></ST>
+    </Implementation>
+    <LineIds Name="SerialCom">
+      <LineId Id="16" Count="3" />
+      <LineId Id="62" Count="1" />
+      <LineId Id="20" Count="0" />
+      <LineId Id="31" Count="0" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="33" Count="0" />
+      <LineId Id="43" Count="2" />
+      <LineId Id="50" Count="0" />
+      <LineId Id="48" Count="1" />
+      <LineId Id="47" Count="0" />
+      <LineId Id="70" Count="2" />
+      <LineId Id="69" Count="0" />
+      <LineId Id="56" Count="0" />
+      <LineId Id="51" Count="2" />
+      <LineId Id="58" Count="0" />
+      <LineId Id="54" Count="1" />
+      <LineId Id="34" Count="0" />
+      <LineId Id="60" Count="0" />
+      <LineId Id="65" Count="0" />
+      <LineId Id="238" Count="0" />
+      <LineId Id="200" Count="8" />
+      <LineId Id="210" Count="3" />
+      <LineId Id="216" Count="0" />
+      <LineId Id="214" Count="0" />
+      <LineId Id="220" Count="0" />
+      <LineId Id="218" Count="1" />
+      <LineId Id="217" Count="0" />
+      <LineId Id="223" Count="0" />
+      <LineId Id="222" Count="0" />
+      <LineId Id="265" Count="0" />
+      <LineId Id="235" Count="0" />
+      <LineId Id="225" Count="9" />
+      <LineId Id="224" Count="0" />
+      <LineId Id="239" Count="0" />
+      <LineId Id="241" Count="20" />
+      <LineId Id="66" Count="0" />
+      <LineId Id="266" Count="3" />
+      <LineId Id="272" Count="1" />
+      <LineId Id="270" Count="0" />
+      <LineId Id="274" Count="0" />
+      <LineId Id="32" Count="0" />
+      <LineId Id="99" Count="1" />
+      <LineId Id="180" Count="0" />
+      <LineId Id="101" Count="10" />
+      <LineId Id="115" Count="1" />
+      <LineId Id="132" Count="2" />
+      <LineId Id="136" Count="7" />
+      <LineId Id="91" Count="0" />
+      <LineId Id="199" Count="0" />
+      <LineId Id="186" Count="0" />
+      <LineId Id="183" Count="0" />
+      <LineId Id="195" Count="0" />
+      <LineId Id="192" Count="0" />
+      <LineId Id="196" Count="0" />
+      <LineId Id="189" Count="0" />
+      <LineId Id="191" Count="0" />
+      <LineId Id="188" Count="0" />
+      <LineId Id="185" Count="0" />
+      <LineId Id="181" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

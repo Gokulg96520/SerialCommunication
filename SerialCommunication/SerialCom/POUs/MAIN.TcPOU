@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <POU Name="MAIN" Id="{41fc15ba-a291-4be3-a8ad-a005952d4c01}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM MAIN
+VAR
+	fbSerialCommInstance1 : SerialCom;
+	sRecieveString : STRING;
+	bRecieveError : BOOL;
+	bSendBusy: BOOL;
+	eSendError: INT;
+	sSendData : STRING;
+	bsendTrigger: BOOL;
+	STxBuffer: INT;
+	tSendTime: INT;
+	sizeoff : UINT;
+	bRecieveReset: BOOL;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* Send & Recieve String Data *)
+fbSerialCommInstance1(bSendData:= bsendTrigger,
+					  bReset := bRecieveReset,
+					  TxBuffer := SerialComm.TxBufferPcCom,
+					  sSendPrefix:='$01',
+					  sSendSuffix:='$02',
+					  sSendString:=sSendData,
+					  bSendBusy =>bSendBusy,
+					  eSendError =>eSendError,
+					  RxBuffer := SerialComm.RxBufferPcCom,
+					  sReceiveString =>sRecieveString,
+					  sReceivePrefix:='$01',
+					  sReceiveSuffix:='$02',
+					  tReceiveTimeOut := T#1S,
+					  bReset :=bRecieveError,
+					  bReceiveStringData =>,
+					  bReceiveBusy =>,
+					  eReceiveError =>,
+					  bReceiveTimeOut =>
+					  );
+]]></ST>
+    </Implementation>
+    <LineIds Name="MAIN">
+      <LineId Id="37" Count="0" />
+      <LineId Id="49" Count="0" />
+      <LineId Id="80" Count="0" />
+      <LineId Id="64" Count="0" />
+      <LineId Id="40" Count="4" />
+      <LineId Id="17" Count="10" />
+      <LineId Id="78" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

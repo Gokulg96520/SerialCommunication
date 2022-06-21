@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.11">
+  <POU Name="BackgroungCommProgram" Id="{b5ee8ad4-5a79-4c3a-a444-bf1525eb48b7}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM BackgroungCommProgram
+VAR
+(* Comm I/O Variable *)
+(* I/O variables for a PC-COM port *)
+stIn_PcCom AT %I* : PcComInData; (* linked to the port in the TwinCAT System Manager *)
+stOut_PcCom AT %Q* : PcComOutData; (* linked to the port in the TwinCAT System Manager *)
+	
+(* Background communication with the PC COM port device *)
+fbPcComCtrl			: SerialLineControl;
+bPcComCtrlError		: BOOL;
+ePcComCtrlErrorID	: ComError_t;	
+
+
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(*
+The SerialLineControl function block is supposed to be called in every PLC cycle.
+It communicates with the serial line hardware device and transmits or receives data 
+*)
+
+fbPcComCtrl(
+	Mode:= SERIALLINEMODE_PC_COM_PORT, 
+	pComIn:= ADR(stIn_PcCom), 
+	pComOut:= ADR(stOut_PcCom), 
+	SizeComIn:= UINT_TO_INT(SIZEOF(stIn_PcCom)), 
+	Error=> , 
+	ErrorID=> , 
+	TxBuffer:= SerialComm.TxBufferPcCom, 
+	RxBuffer:= SerialComm.RxBufferPcCom);
+	
+IF fbPcComCtrl.Error THEN
+	bPcComCtrlError := TRUE;
+	ePcComCtrlErrorID := fbPcComCtrl.ErrorID;
+END_IF
+]]></ST>
+    </Implementation>
+    <LineIds Name="BackgroungCommProgram">
+      <LineId Id="79" Count="18" />
+      <LineId Id="47" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

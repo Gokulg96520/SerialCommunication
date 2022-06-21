@@ -1,0 +1,281 @@
+<?xml version="1.0"?>
+<TcSmProject xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.beckhoff.com/schemas/2012/07/TcSmProject" TcSmVersion="1.0" TcVersion="3.1.4024.29">
+	<DataTypes>
+		<DataType>
+			<Name GUID="{030FFB8A-A6E9-8903-2886-016014F84E04}" Namespace="Tc2_SerialCom" AutoDeleteType="true">PcComInData</Name>
+			<Comment><![CDATA[ This data type is corresponding to the
+   PC COM-Port data structure used in
+   the TwinCAT SystemManager. 
+   (KL-6xxx emulation mode with 64 data bytes)
+]]></Comment>
+			<BitSize>528</BitSize>
+			<SubItem>
+				<Name>SerStatus</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000004}">WORD</Type>
+				<BitSize>16</BitSize>
+				<BitOffs>0</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>D</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000001}">BYTE</Type>
+				<ArrayInfo>
+					<LBound>0</LBound>
+					<Elements>64</Elements>
+				</ArrayInfo>
+				<BitSize>512</BitSize>
+				<BitOffs>16</BitOffs>
+			</SubItem>
+		</DataType>
+		<DataType>
+			<Name GUID="{675EF7AA-B859-9A65-9CAB-B83BD9AA10F1}" Namespace="Tc2_SerialCom" AutoDeleteType="true">PcComOutData</Name>
+			<Comment><![CDATA[ This data type is corresponding to the
+   PC COM-Port data structure used in
+   the TwinCAT SystemManager. 
+   (KL-6xxx emulation mode with 64 data bytes)
+]]></Comment>
+			<BitSize>528</BitSize>
+			<SubItem>
+				<Name>SerCtrl</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000004}">WORD</Type>
+				<BitSize>16</BitSize>
+				<BitOffs>0</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>D</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000001}">BYTE</Type>
+				<ArrayInfo>
+					<LBound>0</LBound>
+					<Elements>64</Elements>
+				</ArrayInfo>
+				<BitSize>512</BitSize>
+				<BitOffs>16</BitOffs>
+			</SubItem>
+		</DataType>
+	</DataTypes>
+	<Project ProjectGUID="{7B022F64-4B4A-4F29-B5B6-D04B89EA12F3}" TargetNetId="172.18.233.47.1.1" Target64Bit="true" ShowHideConfigurations="#x106">
+		<System>
+			<Tasks>
+				<Task Id="3" Priority="20" CycleTime="100000" AmsPort="350" AdtTasks="true">
+					<Name>PlcTask</Name>
+				</Task>
+				<Task Id="4" Priority="19" CycleTime="20000" AmsPort="351" AdtTasks="true">
+					<Name>CommTask</Name>
+				</Task>
+			</Tasks>
+		</System>
+		<Plc>
+			<Project GUID="{B3591696-FFE0-41A9-81E3-F636FADAA828}" Name="SerialCom" PrjFilePath="SerialCom\SerialCom.plcproj" TmcFilePath="SerialCom\SerialCom.tmc" ReloadTmc="true" AmsPort="851" FileArchiveSettings="#x000e" SymbolicMapping="true">
+				<Instance Id="#x08502000" TcSmClass="TComPlcObjDef" KeepUnrestoredLinks="2" TmcPath="SerialCom\SerialCom.tmc">
+					<Name>SerialCom Instance</Name>
+					<CLSID ClassFactory="TcPlc30">{08500001-0000-0000-F000-000000000064}</CLSID>
+					<Vars VarGrpType="1">
+						<Name>CommTask Inputs</Name>
+						<Var>
+							<Name>BackgroungCommProgram.stIn_PcCom</Name>
+							<Comment><![CDATA[ linked to the port in the TwinCAT System Manager ]]></Comment>
+							<Type GUID="{030FFB8A-A6E9-8903-2886-016014F84E04}" Namespace="Tc2_SerialCom">PcComInData</Type>
+						</Var>
+					</Vars>
+					<Vars VarGrpType="2" AreaNo="1">
+						<Name>CommTask Outputs</Name>
+						<Var>
+							<Name>BackgroungCommProgram.stOut_PcCom</Name>
+							<Comment><![CDATA[ linked to the port in the TwinCAT System Manager ]]></Comment>
+							<Type GUID="{675EF7AA-B859-9A65-9CAB-B83BD9AA10F1}" Namespace="Tc2_SerialCom">PcComOutData</Type>
+						</Var>
+					</Vars>
+					<Contexts>
+						<Context>
+							<Id NeedCalleeCall="true">0</Id>
+							<Name>CommTask</Name>
+							<ManualConfig>
+								<OTCID>#x02010040</OTCID>
+							</ManualConfig>
+							<Priority>19</Priority>
+							<CycleTime>2000000</CycleTime>
+						</Context>
+						<Context>
+							<Id NeedCalleeCall="true">1</Id>
+							<Name>PlcTask</Name>
+							<ManualConfig>
+								<OTCID>#x02010030</OTCID>
+							</ManualConfig>
+							<Priority>20</Priority>
+							<CycleTime>10000000</CycleTime>
+						</Context>
+					</Contexts>
+					<TaskPouOids>
+						<TaskPouOid Prio="19" OTCID="#x08502001"/>
+						<TaskPouOid Prio="20" OTCID="#x08502002"/>
+					</TaskPouOids>
+				</Instance>
+			</Project>
+		</Plc>
+		<Io>
+			<Device Id="1" DevType="112" AmsPort="28673" AmsNetId="172.18.233.47.2.1" RemoteName="Device 1 (EtherCAT Automation Protocol)">
+				<Name>Device 1 (EtherCAT Automation Protocol)</Name>
+				<AddressInfo>
+					<Pnp>
+						<DeviceDesc>Ethernet 2 (TwinCAT-Intel PCI Ethernet Adapter (Gig</DeviceDesc>
+						<DeviceName>\DEVICE\{34D2B13E-7D76-417F-8CF9-48E6278B21A9}</DeviceName>
+						<DeviceData>0001055c7963</DeviceData>
+					</Pnp>
+				</AddressInfo>
+				<Image Id="1" AddrType="1" ImageType="3">
+					<Name>Image</Name>
+				</Image>
+				<Ethernet DeviceDesc="Ethernet 2 (TwinCAT-Intel PCI Ethernet Adapter (Gig"/>
+				<Eap EapDeviceGuid="{B8793B2D-5FB4-4515-8404-19F6CDFA04B6}"/>
+			</Device>
+			<Device Id="2" DevType="11" AmsPort="28674">
+				<Name>Device 2 (COM Port)</Name>
+				<AddressInfo>
+					<Io>
+						<Port>1016</Port>
+					</Io>
+				</AddressInfo>
+				<Image Id="2" AddrType="1" ImageType="3">
+					<Name>Image</Name>
+				</Image>
+				<Serial Baud="9600" Port="1016" StopBit="1" RsType="1" UPSDisableSysShutdown="true" WaitTimeToShutdown="60" DataSize="64" BufSize="4096" DataBit="8" SyncMode="true" FifoSize="16" ComPortNo="1" Timeout="300"/>
+			</Device>
+		</Io>
+	</Project>
+	<Mappings>
+		<MappingInfo Identifier="{00000000-2001-0850-0020-500820000403}" Id="#x02030010"/>
+		<OwnerA Name="TIPC^SerialCom^SerialCom Instance">
+			<OwnerB Name="TIID^Device 2 (COM Port)">
+				<Link VarA="CommTask Inputs^BackgroungCommProgram.stIn_PcCom^D" VarB="Inputs^Data1"/>
+				<Link VarA="CommTask Inputs^BackgroungCommProgram.stIn_PcCom^D" VarB="Inputs^Data10" Size="8" OffsA="72"/>
+				<Link VarA="CommTask Inputs^BackgroungCommProgram.stIn_PcCom^D" VarB="Inputs^Data11" Size="8" OffsA="80"/>
+				<Link VarA="CommTask Inputs^BackgroungCommProgram.stIn_PcCom^D" VarB="Inputs^Data12" Size="8" OffsA="88"/>
+				<Link VarA="CommTask Inputs^BackgroungCommProgram.stIn_PcCom^D" VarB="Inputs^Data13" Size="8" OffsA="96"/>
+				<Link VarA="CommTask Inputs^BackgroungCommProgram.stIn_PcCom^D" VarB="Inputs^Data14" Size="8" OffsA="104"/>
+				<Link VarA="CommTask Inputs^BackgroungCommProgram.stIn_PcCom^D" VarB="Inputs^Data15" Size="8" OffsA="112"/>
+				<Link VarA="CommTask Inputs^BackgroungCommProgram.stIn_PcCom^D" VarB="Inputs^Data16" Size="8" OffsA="120"/>
+				<Link VarA="CommTask Inputs^BackgroungCommProgram.stIn_PcCom^D" VarB="Inputs^Data17" Size="8" OffsA="128"/>
+				<Link VarA="CommTask Inputs^BackgroungCommProgram.stIn_PcCom^D" VarB="Inputs^Data18" Size="8" OffsA="136"/>
+				<Link VarA="CommTask Inputs^BackgroungCommProgram.stIn_PcCom^D" VarB="Inputs^Data19" Size="8" OffsA="144"/>
+				<Link VarA="CommTask Inputs^BackgroungCommProgram.stIn_PcCom^D" VarB="Inputs^Data2" Size="8" OffsA="8"/>
+				<Link VarA="CommTask Inputs^BackgroungCommProgram.stIn_PcCom^D" VarB="Inputs^Data20" Size="8" OffsA="152"/>
+				<Link VarA="CommTask Inputs^BackgroungCommProgram.stIn_PcCom^D" VarB="Inputs^Data21" Size="8" OffsA="160"/>
+				<Link VarA="CommTask Inputs^BackgroungCommProgram.stIn_PcCom^D" VarB="Inputs^Data22" Size="8" OffsA="168"/>
+				<Link VarA="CommTask Inputs^BackgroungCommProgram.stIn_PcCom^D" VarB="Inputs^Data23" Size="8" OffsA="176"/>
+				<Link VarA="CommTask Inputs^BackgroungCommProgram.stIn_PcCom^D" VarB="Inputs^Data24" Size="8" OffsA="184"/>
+				<Link VarA="CommTask Inputs^BackgroungCommProgram.stIn_PcCom^D" VarB="Inputs^Data25" Size="8" OffsA="192"/>
+				<Link VarA="CommTask Inputs^BackgroungCommProgram.stIn_PcCom^D" VarB="Inputs^Data26" Size="8" OffsA="200"/>
+				<Link VarA="CommTask Inputs^BackgroungCommProgram.stIn_PcCom^D" VarB="Inputs^Data27" Size="8" OffsA="208"/>
+				<Link VarA="CommTask Inputs^BackgroungCommProgram.stIn_PcCom^D" VarB="Inputs^Data28" Size="8" OffsA="216"/>
+				<Link VarA="CommTask Inputs^BackgroungCommProgram.stIn_PcCom^D" VarB="Inputs^Data29" Size="8" OffsA="224"/>
+				<Link VarA="CommTask Inputs^BackgroungCommProgram.stIn_PcCom^D" VarB="Inputs^Data3" Size="8" OffsA="16"/>
+				<Link VarA="CommTask Inputs^BackgroungCommProgram.stIn_PcCom^D" VarB="Inputs^Data30" Size="8" OffsA="232"/>
+				<Link VarA="CommTask Inputs^BackgroungCommProgram.stIn_PcCom^D" VarB="Inputs^Data31" Size="8" OffsA="240"/>
+				<Link VarA="CommTask Inputs^BackgroungCommProgram.stIn_PcCom^D" VarB="Inputs^Data32" Size="8" OffsA="248"/>
+				<Link VarA="CommTask Inputs^BackgroungCommProgram.stIn_PcCom^D" VarB="Inputs^Data33" Size="8" OffsA="256"/>
+				<Link VarA="CommTask Inputs^BackgroungCommProgram.stIn_PcCom^D" VarB="Inputs^Data34" Size="8" OffsA="264"/>
+				<Link VarA="CommTask Inputs^BackgroungCommProgram.stIn_PcCom^D" VarB="Inputs^Data35" Size="8" OffsA="272"/>
+				<Link VarA="CommTask Inputs^BackgroungCommProgram.stIn_PcCom^D" VarB="Inputs^Data36" Size="8" OffsA="280"/>
+				<Link VarA="CommTask Inputs^BackgroungCommProgram.stIn_PcCom^D" VarB="Inputs^Data37" Size="8" OffsA="288"/>
+				<Link VarA="CommTask Inputs^BackgroungCommProgram.stIn_PcCom^D" VarB="Inputs^Data38" Size="8" OffsA="296"/>
+				<Link VarA="CommTask Inputs^BackgroungCommProgram.stIn_PcCom^D" VarB="Inputs^Data39" Size="8" OffsA="304"/>
+				<Link VarA="CommTask Inputs^BackgroungCommProgram.stIn_PcCom^D" VarB="Inputs^Data4" Size="8" OffsA="24"/>
+				<Link VarA="CommTask Inputs^BackgroungCommProgram.stIn_PcCom^D" VarB="Inputs^Data40" Size="8" OffsA="312"/>
+				<Link VarA="CommTask Inputs^BackgroungCommProgram.stIn_PcCom^D" VarB="Inputs^Data41" Size="8" OffsA="320"/>
+				<Link VarA="CommTask Inputs^BackgroungCommProgram.stIn_PcCom^D" VarB="Inputs^Data42" Size="8" OffsA="328"/>
+				<Link VarA="CommTask Inputs^BackgroungCommProgram.stIn_PcCom^D" VarB="Inputs^Data43" Size="8" OffsA="336"/>
+				<Link VarA="CommTask Inputs^BackgroungCommProgram.stIn_PcCom^D" VarB="Inputs^Data44" Size="8" OffsA="344"/>
+				<Link VarA="CommTask Inputs^BackgroungCommProgram.stIn_PcCom^D" VarB="Inputs^Data45" Size="8" OffsA="352"/>
+				<Link VarA="CommTask Inputs^BackgroungCommProgram.stIn_PcCom^D" VarB="Inputs^Data46" Size="8" OffsA="360"/>
+				<Link VarA="CommTask Inputs^BackgroungCommProgram.stIn_PcCom^D" VarB="Inputs^Data47" Size="8" OffsA="368"/>
+				<Link VarA="CommTask Inputs^BackgroungCommProgram.stIn_PcCom^D" VarB="Inputs^Data48" Size="8" OffsA="376"/>
+				<Link VarA="CommTask Inputs^BackgroungCommProgram.stIn_PcCom^D" VarB="Inputs^Data49" Size="8" OffsA="384"/>
+				<Link VarA="CommTask Inputs^BackgroungCommProgram.stIn_PcCom^D" VarB="Inputs^Data5" Size="8" OffsA="32"/>
+				<Link VarA="CommTask Inputs^BackgroungCommProgram.stIn_PcCom^D" VarB="Inputs^Data50" Size="8" OffsA="392"/>
+				<Link VarA="CommTask Inputs^BackgroungCommProgram.stIn_PcCom^D" VarB="Inputs^Data51" Size="8" OffsA="400"/>
+				<Link VarA="CommTask Inputs^BackgroungCommProgram.stIn_PcCom^D" VarB="Inputs^Data52" Size="8" OffsA="408"/>
+				<Link VarA="CommTask Inputs^BackgroungCommProgram.stIn_PcCom^D" VarB="Inputs^Data53" Size="8" OffsA="416"/>
+				<Link VarA="CommTask Inputs^BackgroungCommProgram.stIn_PcCom^D" VarB="Inputs^Data54" Size="8" OffsA="424"/>
+				<Link VarA="CommTask Inputs^BackgroungCommProgram.stIn_PcCom^D" VarB="Inputs^Data55" Size="8" OffsA="432"/>
+				<Link VarA="CommTask Inputs^BackgroungCommProgram.stIn_PcCom^D" VarB="Inputs^Data56" Size="8" OffsA="440"/>
+				<Link VarA="CommTask Inputs^BackgroungCommProgram.stIn_PcCom^D" VarB="Inputs^Data57" Size="8" OffsA="448"/>
+				<Link VarA="CommTask Inputs^BackgroungCommProgram.stIn_PcCom^D" VarB="Inputs^Data58" Size="8" OffsA="456"/>
+				<Link VarA="CommTask Inputs^BackgroungCommProgram.stIn_PcCom^D" VarB="Inputs^Data59" Size="8" OffsA="464"/>
+				<Link VarA="CommTask Inputs^BackgroungCommProgram.stIn_PcCom^D" VarB="Inputs^Data6" Size="8" OffsA="40"/>
+				<Link VarA="CommTask Inputs^BackgroungCommProgram.stIn_PcCom^D" VarB="Inputs^Data60" Size="8" OffsA="472"/>
+				<Link VarA="CommTask Inputs^BackgroungCommProgram.stIn_PcCom^D" VarB="Inputs^Data61" Size="8" OffsA="480"/>
+				<Link VarA="CommTask Inputs^BackgroungCommProgram.stIn_PcCom^D" VarB="Inputs^Data62" Size="8" OffsA="488"/>
+				<Link VarA="CommTask Inputs^BackgroungCommProgram.stIn_PcCom^D" VarB="Inputs^Data63" Size="8" OffsA="496"/>
+				<Link VarA="CommTask Inputs^BackgroungCommProgram.stIn_PcCom^D" VarB="Inputs^Data64" Size="8" OffsA="504"/>
+				<Link VarA="CommTask Inputs^BackgroungCommProgram.stIn_PcCom^D" VarB="Inputs^Data7" Size="8" OffsA="48"/>
+				<Link VarA="CommTask Inputs^BackgroungCommProgram.stIn_PcCom^D" VarB="Inputs^Data8" Size="8" OffsA="56"/>
+				<Link VarA="CommTask Inputs^BackgroungCommProgram.stIn_PcCom^D" VarB="Inputs^Data9" Size="8" OffsA="64"/>
+				<Link VarA="CommTask Inputs^BackgroungCommProgram.stIn_PcCom^SerStatus" VarB="Inputs^Status"/>
+				<Link VarA="CommTask Outputs^BackgroungCommProgram.stOut_PcCom^D" VarB="Outputs^Data1"/>
+				<Link VarA="CommTask Outputs^BackgroungCommProgram.stOut_PcCom^D" VarB="Outputs^Data10" Size="8" OffsA="72"/>
+				<Link VarA="CommTask Outputs^BackgroungCommProgram.stOut_PcCom^D" VarB="Outputs^Data11" Size="8" OffsA="80"/>
+				<Link VarA="CommTask Outputs^BackgroungCommProgram.stOut_PcCom^D" VarB="Outputs^Data12" Size="8" OffsA="88"/>
+				<Link VarA="CommTask Outputs^BackgroungCommProgram.stOut_PcCom^D" VarB="Outputs^Data13" Size="8" OffsA="96"/>
+				<Link VarA="CommTask Outputs^BackgroungCommProgram.stOut_PcCom^D" VarB="Outputs^Data14" Size="8" OffsA="104"/>
+				<Link VarA="CommTask Outputs^BackgroungCommProgram.stOut_PcCom^D" VarB="Outputs^Data15" Size="8" OffsA="112"/>
+				<Link VarA="CommTask Outputs^BackgroungCommProgram.stOut_PcCom^D" VarB="Outputs^Data16" Size="8" OffsA="120"/>
+				<Link VarA="CommTask Outputs^BackgroungCommProgram.stOut_PcCom^D" VarB="Outputs^Data17" Size="8" OffsA="128"/>
+				<Link VarA="CommTask Outputs^BackgroungCommProgram.stOut_PcCom^D" VarB="Outputs^Data18" Size="8" OffsA="136"/>
+				<Link VarA="CommTask Outputs^BackgroungCommProgram.stOut_PcCom^D" VarB="Outputs^Data19" Size="8" OffsA="144"/>
+				<Link VarA="CommTask Outputs^BackgroungCommProgram.stOut_PcCom^D" VarB="Outputs^Data2" Size="8" OffsA="8"/>
+				<Link VarA="CommTask Outputs^BackgroungCommProgram.stOut_PcCom^D" VarB="Outputs^Data20" Size="8" OffsA="152"/>
+				<Link VarA="CommTask Outputs^BackgroungCommProgram.stOut_PcCom^D" VarB="Outputs^Data21" Size="8" OffsA="160"/>
+				<Link VarA="CommTask Outputs^BackgroungCommProgram.stOut_PcCom^D" VarB="Outputs^Data22" Size="8" OffsA="168"/>
+				<Link VarA="CommTask Outputs^BackgroungCommProgram.stOut_PcCom^D" VarB="Outputs^Data23" Size="8" OffsA="176"/>
+				<Link VarA="CommTask Outputs^BackgroungCommProgram.stOut_PcCom^D" VarB="Outputs^Data24" Size="8" OffsA="184"/>
+				<Link VarA="CommTask Outputs^BackgroungCommProgram.stOut_PcCom^D" VarB="Outputs^Data25" Size="8" OffsA="192"/>
+				<Link VarA="CommTask Outputs^BackgroungCommProgram.stOut_PcCom^D" VarB="Outputs^Data26" Size="8" OffsA="200"/>
+				<Link VarA="CommTask Outputs^BackgroungCommProgram.stOut_PcCom^D" VarB="Outputs^Data27" Size="8" OffsA="208"/>
+				<Link VarA="CommTask Outputs^BackgroungCommProgram.stOut_PcCom^D" VarB="Outputs^Data28" Size="8" OffsA="216"/>
+				<Link VarA="CommTask Outputs^BackgroungCommProgram.stOut_PcCom^D" VarB="Outputs^Data29" Size="8" OffsA="224"/>
+				<Link VarA="CommTask Outputs^BackgroungCommProgram.stOut_PcCom^D" VarB="Outputs^Data3" Size="8" OffsA="16"/>
+				<Link VarA="CommTask Outputs^BackgroungCommProgram.stOut_PcCom^D" VarB="Outputs^Data30" Size="8" OffsA="232"/>
+				<Link VarA="CommTask Outputs^BackgroungCommProgram.stOut_PcCom^D" VarB="Outputs^Data31" Size="8" OffsA="240"/>
+				<Link VarA="CommTask Outputs^BackgroungCommProgram.stOut_PcCom^D" VarB="Outputs^Data32" Size="8" OffsA="248"/>
+				<Link VarA="CommTask Outputs^BackgroungCommProgram.stOut_PcCom^D" VarB="Outputs^Data33" Size="8" OffsA="256"/>
+				<Link VarA="CommTask Outputs^BackgroungCommProgram.stOut_PcCom^D" VarB="Outputs^Data34" Size="8" OffsA="264"/>
+				<Link VarA="CommTask Outputs^BackgroungCommProgram.stOut_PcCom^D" VarB="Outputs^Data35" Size="8" OffsA="272"/>
+				<Link VarA="CommTask Outputs^BackgroungCommProgram.stOut_PcCom^D" VarB="Outputs^Data36" Size="8" OffsA="280"/>
+				<Link VarA="CommTask Outputs^BackgroungCommProgram.stOut_PcCom^D" VarB="Outputs^Data37" Size="8" OffsA="288"/>
+				<Link VarA="CommTask Outputs^BackgroungCommProgram.stOut_PcCom^D" VarB="Outputs^Data38" Size="8" OffsA="296"/>
+				<Link VarA="CommTask Outputs^BackgroungCommProgram.stOut_PcCom^D" VarB="Outputs^Data39" Size="8" OffsA="304"/>
+				<Link VarA="CommTask Outputs^BackgroungCommProgram.stOut_PcCom^D" VarB="Outputs^Data4" Size="8" OffsA="24"/>
+				<Link VarA="CommTask Outputs^BackgroungCommProgram.stOut_PcCom^D" VarB="Outputs^Data40" Size="8" OffsA="312"/>
+				<Link VarA="CommTask Outputs^BackgroungCommProgram.stOut_PcCom^D" VarB="Outputs^Data41" Size="8" OffsA="320"/>
+				<Link VarA="CommTask Outputs^BackgroungCommProgram.stOut_PcCom^D" VarB="Outputs^Data42" Size="8" OffsA="328"/>
+				<Link VarA="CommTask Outputs^BackgroungCommProgram.stOut_PcCom^D" VarB="Outputs^Data43" Size="8" OffsA="336"/>
+				<Link VarA="CommTask Outputs^BackgroungCommProgram.stOut_PcCom^D" VarB="Outputs^Data44" Size="8" OffsA="344"/>
+				<Link VarA="CommTask Outputs^BackgroungCommProgram.stOut_PcCom^D" VarB="Outputs^Data45" Size="8" OffsA="352"/>
+				<Link VarA="CommTask Outputs^BackgroungCommProgram.stOut_PcCom^D" VarB="Outputs^Data46" Size="8" OffsA="360"/>
+				<Link VarA="CommTask Outputs^BackgroungCommProgram.stOut_PcCom^D" VarB="Outputs^Data47" Size="8" OffsA="368"/>
+				<Link VarA="CommTask Outputs^BackgroungCommProgram.stOut_PcCom^D" VarB="Outputs^Data48" Size="8" OffsA="376"/>
+				<Link VarA="CommTask Outputs^BackgroungCommProgram.stOut_PcCom^D" VarB="Outputs^Data49" Size="8" OffsA="384"/>
+				<Link VarA="CommTask Outputs^BackgroungCommProgram.stOut_PcCom^D" VarB="Outputs^Data5" Size="8" OffsA="32"/>
+				<Link VarA="CommTask Outputs^BackgroungCommProgram.stOut_PcCom^D" VarB="Outputs^Data50" Size="8" OffsA="392"/>
+				<Link VarA="CommTask Outputs^BackgroungCommProgram.stOut_PcCom^D" VarB="Outputs^Data51" Size="8" OffsA="400"/>
+				<Link VarA="CommTask Outputs^BackgroungCommProgram.stOut_PcCom^D" VarB="Outputs^Data52" Size="8" OffsA="408"/>
+				<Link VarA="CommTask Outputs^BackgroungCommProgram.stOut_PcCom^D" VarB="Outputs^Data53" Size="8" OffsA="416"/>
+				<Link VarA="CommTask Outputs^BackgroungCommProgram.stOut_PcCom^D" VarB="Outputs^Data54" Size="8" OffsA="424"/>
+				<Link VarA="CommTask Outputs^BackgroungCommProgram.stOut_PcCom^D" VarB="Outputs^Data55" Size="8" OffsA="432"/>
+				<Link VarA="CommTask Outputs^BackgroungCommProgram.stOut_PcCom^D" VarB="Outputs^Data56" Size="8" OffsA="440"/>
+				<Link VarA="CommTask Outputs^BackgroungCommProgram.stOut_PcCom^D" VarB="Outputs^Data57" Size="8" OffsA="448"/>
+				<Link VarA="CommTask Outputs^BackgroungCommProgram.stOut_PcCom^D" VarB="Outputs^Data58" Size="8" OffsA="456"/>
+				<Link VarA="CommTask Outputs^BackgroungCommProgram.stOut_PcCom^D" VarB="Outputs^Data59" Size="8" OffsA="464"/>
+				<Link VarA="CommTask Outputs^BackgroungCommProgram.stOut_PcCom^D" VarB="Outputs^Data6" Size="8" OffsA="40"/>
+				<Link VarA="CommTask Outputs^BackgroungCommProgram.stOut_PcCom^D" VarB="Outputs^Data60" Size="8" OffsA="472"/>
+				<Link VarA="CommTask Outputs^BackgroungCommProgram.stOut_PcCom^D" VarB="Outputs^Data61" Size="8" OffsA="480"/>
+				<Link VarA="CommTask Outputs^BackgroungCommProgram.stOut_PcCom^D" VarB="Outputs^Data62" Size="8" OffsA="488"/>
+				<Link VarA="CommTask Outputs^BackgroungCommProgram.stOut_PcCom^D" VarB="Outputs^Data63" Size="8" OffsA="496"/>
+				<Link VarA="CommTask Outputs^BackgroungCommProgram.stOut_PcCom^D" VarB="Outputs^Data64" Size="8" OffsA="504"/>
+				<Link VarA="CommTask Outputs^BackgroungCommProgram.stOut_PcCom^D" VarB="Outputs^Data7" Size="8" OffsA="48"/>
+				<Link VarA="CommTask Outputs^BackgroungCommProgram.stOut_PcCom^D" VarB="Outputs^Data8" Size="8" OffsA="56"/>
+				<Link VarA="CommTask Outputs^BackgroungCommProgram.stOut_PcCom^D" VarB="Outputs^Data9" Size="8" OffsA="64"/>
+				<Link VarA="CommTask Outputs^BackgroungCommProgram.stOut_PcCom^SerCtrl" VarB="Outputs^Ctrl"/>
+			</OwnerB>
+		</OwnerA>
+	</Mappings>
+</TcSmProject>
